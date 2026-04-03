@@ -1,0 +1,4696 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardware Sourcing Database</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Syne:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #2a2f3d;
+    --accent: #f0c040;
+    --accent2: #4fc3f7;
+    --accent3: #a78bfa;
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --red: #f87171;
+    --green: #4ade80;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .logo-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+  }
+
+  .stat-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .stat-pill .label { color: var(--text-muted); }
+  .stat-pill .value { font-weight: 700; color: var(--accent); font-family: 'Space Mono', monospace; }
+
+  .btn-add {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-add:hover { opacity: 0.85; }
+
+  .btn-export {
+    background: var(--surface2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .btn-export:hover { background: rgba(240,192,64,0.12); }
+
+  /* MAIN LAYOUT */
+  .container { display: flex; height: calc(100vh - 65px); }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-section { margin-bottom: 8px; }
+
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0 20px 8px;
+    font-family: 'Space Mono', monospace;
+    display: block;
+  }
+
+  .sidebar-label-row {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px 8px 20px;
+  }
+
+  .sidebar-label-row .sidebar-label {
+    padding: 0;
+    display: inline;
+  }
+
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 9px 20px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .filter-btn:hover { background: var(--surface2); }
+  .filter-btn.active {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .filter-btn .count {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+  }
+
+  .filter-btn.active .count {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 20px;
+  }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+
+  /* SEARCH + FILTERS */
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 16px 11px 40px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 16px;
+  }
+
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .filter-select:focus { border-color: var(--accent); }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  thead th:hover { color: var(--accent); }
+
+  thead th.sort-asc::after { content: ' ↑'; color: var(--accent); }
+  thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  td {
+    padding: 12px 16px;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .td-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+  }
+
+  .td-desc { font-weight: 600; max-width: 280px; }
+  .td-spec { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .badge-steel { background: rgba(74, 222, 128, 0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .badge-aluminium { background: rgba(79, 195, 247, 0.1); color: var(--accent2); border: 1px solid rgba(79,195,247,0.3); }
+  .badge-pipe { background: rgba(240, 192, 64, 0.1); color: var(--accent); border: 1px solid rgba(240,192,64,0.3); }
+  .badge-copper { background: rgba(251, 146, 60, 0.1); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .badge-stainless { background: rgba(167, 139, 250, 0.1); color: var(--accent3); border: 1px solid rgba(167,139,250,0.3); }
+  .badge-galvanized { background: rgba(209, 213, 219, 0.1); color: #d1d5db; border: 1px solid rgba(209,213,219,0.3); }
+  .badge-other { background: rgba(107, 114, 128, 0.1); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
+
+  .shape-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .td-price {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .td-source {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .action-btns { display: flex; gap: 6px; }
+
+  .btn-edit, .btn-del {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    transition: opacity 0.2s;
+  }
+
+  .btn-edit { background: rgba(79,195,247,0.15); color: var(--accent2); border: 1px solid rgba(79,195,247,0.3); }
+  .btn-del { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+  .btn-edit:hover, .btn-del:hover { opacity: 0.7; }
+
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 560px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .modal-title { font-size: 18px; font-weight: 800; }
+
+  .modal-close {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-group label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); }
+
+  .form-group textarea { resize: vertical; min-height: 60px; }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .btn-cancel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn-save {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 24px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* CONFIRM DIALOG */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: var(--surface);
+    border: 1px solid var(--red);
+    border-radius: 14px;
+    padding: 28px;
+    width: 360px;
+    text-align: center;
+  }
+  .confirm-box h3 { font-size: 16px; margin-bottom: 8px; }
+  .confirm-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+  .btn-confirm-del { background: var(--red); color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; }
+  .btn-confirm-cancel { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 20px; color: var(--text); font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; }
+
+  .results-bar {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  .results-bar span { color: var(--accent); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #4a5568; }
+
+  /* MAIN CATEGORY BUTTONS */
+  .cat-main-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 11px 16px 11px 20px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .cat-main-btn:hover { background: var(--surface2); }
+  .cat-main-btn.active {
+    background: rgba(240,192,64,0.08);
+    border-left-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .cat-main-btn .cat-main-label {
+    flex: 1;
+    text-align: left;
+    line-height: 1.3;
+  }
+  .cat-main-btn .count {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+  .cat-main-btn.active .count {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  /* SUB FILTERS PANEL */
+  .sub-filters-panel {
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+  }
+  .sub-section {
+    padding: 10px 0 4px;
+    border-bottom: 1px solid rgba(42,47,61,0.5);
+  }
+  .sub-section:last-child { border-bottom: none; }
+  .sub-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px 6px 20px;
+  }
+  .sub-section-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+  }
+  .btn-manage-sub {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--accent);
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  .btn-manage-sub:hover { background: rgba(240,192,64,0.12); border-color: var(--accent); }
+  .sub-filter-btn {
+    padding: 7px 14px 7px 28px !important;
+    font-size: 12px !important;
+    color: var(--text-muted) !important;
+    border-left: 3px solid transparent !important;
+  }
+  .sub-filter-btn:hover { background: var(--surface2); color: var(--text) !important; }
+  .sub-filter-btn.active {
+    background: var(--surface2) !important;
+    border-left-color: var(--accent2) !important;
+    color: var(--accent2) !important;
+    font-weight: 700 !important;
+  }
+  .sub-filter-btn.active .count {
+    background: var(--accent2) !important;
+    color: #000 !important;
+    border-color: var(--accent2) !important;
+  }
+
+  /* MANAGE CATEGORIES */
+  .btn-manage {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .btn-manage:hover { color: var(--accent); border-color: var(--accent); }
+
+  .cat-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .cat-modal-overlay.open { display: flex; }
+
+  .cat-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 480px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 26px;
+    animation: modalIn 0.2s ease;
+  }
+
+  .cat-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .cat-modal-title { font-size: 16px; font-weight: 800; }
+  .cat-modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+
+  .cat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+  .cat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+
+  .cat-item input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .cat-item .cat-count-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 1px 8px;
+    white-space: nowrap;
+  }
+
+  .cat-item .btn-cat-del {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+    transition: color 0.15s;
+  }
+  .cat-item .btn-cat-del:hover { color: var(--red); }
+
+  .cat-item .drag-handle {
+    color: var(--text-muted);
+    cursor: grab;
+    font-size: 16px;
+    opacity: 0.6;
+    padding: 0 2px;
+    user-select: none;
+    transition: opacity 0.15s, color 0.15s;
+  }
+  .cat-item .drag-handle:hover { opacity: 1; color: var(--accent); }
+  .cat-item .drag-handle:active { cursor: grabbing; }
+  .cat-item.drag-over {
+    border-color: var(--accent);
+    background: rgba(240,192,64,0.08);
+  }
+  .cat-item.dragging {
+    opacity: 0.4;
+    border-style: dashed;
+  }
+  .cat-move-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex-shrink: 0;
+  }
+  .btn-move {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 10px;
+    padding: 0px 3px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .btn-move:hover { color: var(--accent); }
+  .btn-move:disabled { opacity: 0.2; cursor: default; }
+
+  .btn-add-cat {
+    width: 100%;
+    background: rgba(240,192,64,0.08);
+    border: 1px dashed rgba(240,192,64,0.4);
+    border-radius: 8px;
+    padding: 9px;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-add-cat:hover { background: rgba(240,192,64,0.14); }
+
+  .cat-warning {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    line-height: 1.5;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-title">⬡ HARDWARE SOURCING DB</span>
+    <span class="logo-sub">ZARIS MACHINERY</span>
+  </div>
+  <div class="header-stats">
+    <div class="stat-pill"><span class="label">TOTAL ITEMS</span><span class="value" id="totalCount">97</span></div>
+    <div class="stat-pill"><span class="label">FILTERED</span><span class="value" id="filteredCount">97</span></div>
+    <div class="stat-pill"><span class="label">SOURCES</span><span class="value">3</span></div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn-export" onclick="exportHTML()">⬇ Export HTML</button>
+    <button class="btn-add" onclick="openAddModal()">＋ Add Item</button>
+  </div>
+</header>
+
+<div class="container">
+  <aside class="sidebar">
+    <div id="sidebarInner">
+    <div class="sidebar-section">
+      <div class="sidebar-label-row" style="margin-bottom:8px">
+        <span class="sidebar-label" style="padding:0">Categories</span>
+        <button class="btn-manage" onclick="openCatModal('productCategory')">⚙ Manage</button>
+      </div>
+      <button class="cat-main-btn active" onclick="selectProductCat('all')">
+        <span class="cat-main-label">All Items</span>
+        <span class="count">97</span>
+      </button>
+      
+      <button class="cat-main-btn" onclick="selectProductCat('Besi')">
+        <span class="cat-main-label">Besi</span>
+        <span class="count">91</span>
+      </button>
+      
+    
+      <button class="cat-main-btn" onclick="selectProductCat('Welding Consumables')">
+        <span class="cat-main-label">Welding Consumables</span>
+        <span class="count">6</span>
+      </button>
+      
+    
+      <button class="cat-main-btn" onclick="selectProductCat('Welding Machine')">
+        <span class="cat-main-label">Welding Machine</span>
+        <span class="count">0</span>
+      </button>
+      
+    
+      <button class="cat-main-btn" onclick="selectProductCat('Power Tools (Metal &amp; Wood Working)')">
+        <span class="cat-main-label">Power Tools (Metal &amp; Wood Working)</span>
+        <span class="count">0</span>
+      </button>
+      
+    
+      <button class="cat-main-btn" onclick="selectProductCat('Electrical &amp; Electronic Consumables')">
+        <span class="cat-main-label">Electrical &amp; Electronic Consumables</span>
+        <span class="count">0</span>
+      </button>
+      
+    
+    </div>
+  </div>
+  </aside>
+
+  <main class="content">
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search item name, code, size..." oninput="renderTable()">
+      </div>
+      <select class="filter-select" id="sizeFilter" onchange="renderTable()">
+        <option value="">All Sizes</option>
+      </select>
+      <select class="filter-select" id="sortSelect" onchange="renderTable()">
+        <option value="default">Sort: Default</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+        <option value="name-asc">Name: A → Z</option>
+      </select>
+    </div>
+    <div class="results-bar">Showing <span id="showingCount">97</span> items</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="toggleSort('code')" id="th-code">CODE</th>
+            <th onclick="toggleSort('description')" id="th-desc">DESCRIPTION / SPEC</th>
+            <th>MATERIAL</th>
+            <th>SHAPE</th>
+            <th onclick="toggleSort('size')" id="th-size">SIZE</th>
+            <th onclick="toggleSort('price')" id="th-price">UNIT PRICE</th>
+            <th>QTY</th>
+            <th>SOURCE</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+    <tr>
+      <td class="td-code">SF-QT375-01</td>
+      <td><div class="td-desc">Black Pipe</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2" X 6M (OD 60.2MM X THK 1.9MM)</td>
+      <td class="td-price">RM 45.90</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(1)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(1)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-02</td>
+      <td><div class="td-desc">Black Pipe</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1 1/2" X 6M (OD 48.4MM X THK 1.9MM)</td>
+      <td class="td-price">RM 36.50</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(2)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(2)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-03</td>
+      <td><div class="td-desc">Black Pipe</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1" X 6M (OD 33.8MM X THK 1.9MM)</td>
+      <td class="td-price">RM 25.10</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(3)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(3)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-04</td>
+      <td><div class="td-desc">Rectangular Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.5MM X 2" X 4" X 6M</td>
+      <td class="td-price">RM 57.80</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(4)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(4)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-05</td>
+      <td><div class="td-desc">Rectangular Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.5MM X 2" X 3" X 6M</td>
+      <td class="td-price">RM 47.10</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(5)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(5)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-06</td>
+      <td><div class="td-desc">Rectangular Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 1" X 2" X 6M</td>
+      <td class="td-price">RM 16.90</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(6)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(6)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-07</td>
+      <td><div class="td-desc">Square Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 1" X 1" X 6M</td>
+      <td class="td-price">RM 11.10</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(7)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(7)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-08</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 4FT X 8FT</td>
+      <td class="td-price">RM 186.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(8)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(8)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-09</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">9MM X 4FT X 8FT</td>
+      <td class="td-price">RM 557.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(9)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(9)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-10</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1/8" X 1" X 6M</td>
+      <td class="td-price">RM 12.50</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(10)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(10)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-11</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1/8" X 2" X 6M</td>
+      <td class="td-price">RM 26.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(11)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(11)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-12</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3/8" X 4" X 6M</td>
+      <td class="td-price">RM 121.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(12)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(12)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-13</td>
+      <td><div class="td-desc">Mild Steel Angle Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 1" X 6M</td>
+      <td class="td-price">RM 15.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(13)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(13)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-14</td>
+      <td><div class="td-desc">Mild Steel Angle Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 1 1/2" X 6M</td>
+      <td class="td-price">RM 23.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(14)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(14)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-15</td>
+      <td><div class="td-desc">Galvanized Plate</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-galvanized">Galvanized</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 4FT X 8FT</td>
+      <td class="td-price">RM 270.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(15)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(15)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-16</td>
+      <td><div class="td-desc">Universal Beam</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Beam/Channel</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">100MM X 100MM X 16.9KG/M X 6M</td>
+      <td class="td-price">RM 476.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(16)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(16)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-17</td>
+      <td><div class="td-desc">Rectangular Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 3/4" X 1 1/2" X 6M</td>
+      <td class="td-price">RM 12.70</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(17)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(17)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-18</td>
+      <td><div class="td-desc">Rectangular Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 1" X 2" X 6M</td>
+      <td class="td-price">RM 16.90</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(18)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(18)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-19</td>
+      <td><div class="td-desc">Square Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 1" X 1" X 6M</td>
+      <td class="td-price">RM 11.10</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(19)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(19)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-20</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1/8" X 1" X 6M</td>
+      <td class="td-price">RM 12.50</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(20)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(20)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-21</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1/8" X 2" X 6M</td>
+      <td class="td-price">RM 26.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(21)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(21)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-22</td>
+      <td><div class="td-desc">Square Hollow Section</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 1/2" X 1/2" X 6M</td>
+      <td class="td-price">RM 5.30</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(22)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(22)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-23</td>
+      <td><div class="td-desc">Mild Steel Angle Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 1" X 6M</td>
+      <td class="td-price">RM 15.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(23)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(23)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-24</td>
+      <td><div class="td-desc">Mild Steel Angle Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 1 1/2" X 6M</td>
+      <td class="td-price">RM 23.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(24)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(24)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-25</td>
+      <td><div class="td-desc">Mild Steel Angle Bar</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 2" X 6M</td>
+      <td class="td-price">RM 23.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(25)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(25)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-26</td>
+      <td><div class="td-desc">Expanded Metal</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Other</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1020# X 4FT X 8FT T:2MM HOLE 16X38</td>
+      <td class="td-price">RM 45.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(26)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(26)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT375-27</td>
+      <td><div class="td-desc">Black Pipe</div><div class="td-spec">QT2501375</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1" X 6M (OD 33.8MM X THK 1.9MM)</td>
+      <td class="td-price">RM 25.10</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(27)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(27)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-01</td>
+      <td><div class="td-desc">Aluminium Square Bar (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Square Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">4" X 4" X 3.66M</td>
+      <td class="td-price">RM 3227.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(28)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(28)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-02</td>
+      <td><div class="td-desc">Aluminium Shaft (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Shaft</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2" X 6M</td>
+      <td class="td-price">RM 1057.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(29)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(29)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-03</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">12MM X 100MM X 6M</td>
+      <td class="td-price">RM 161.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(30)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(30)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-04</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">25MM X 100MM X 6M</td>
+      <td class="td-price">RM 412.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(31)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(31)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-05</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">25MM X 150MM X 6M</td>
+      <td class="td-price">RM 742.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(32)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(32)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-06</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">25MM X 50MM X 6M</td>
+      <td class="td-price">RM 242.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(33)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(33)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-07</td>
+      <td><div class="td-desc">Mild Steel Round Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">16MM X 6M</td>
+      <td class="td-price">RM 28.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(34)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(34)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-08</td>
+      <td><div class="td-desc">Mild Steel Round Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">20MM X 6M</td>
+      <td class="td-price">RM 44.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(35)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(35)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-09</td>
+      <td><div class="td-desc">Mild Steel Shaft</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Shaft</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">32MM X 6.03M</td>
+      <td class="td-price">RM 133.20</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(36)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(36)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-10</td>
+      <td><div class="td-desc">Aluminium Plate (1100)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">5MM X 4FT X 8FT</td>
+      <td class="td-price">RM 1023.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(37)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(37)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-11</td>
+      <td><div class="td-desc">Aluminium Shaft (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Shaft</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2" X 3000MM</td>
+      <td class="td-price">RM 635.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(38)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(38)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-12</td>
+      <td><div class="td-desc">Aluminium Shaft (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Shaft</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1 1/4" X 3000MM</td>
+      <td class="td-price">RM 249.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(39)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(39)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-13</td>
+      <td><div class="td-desc">Aluminium Square Bar (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Square Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2 1/2" X 2 1/2" X 3M</td>
+      <td class="td-price">RM 1029.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(40)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(40)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-14</td>
+      <td><div class="td-desc">Aluminium Plate (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">40MM X 4" X 3000MM</td>
+      <td class="td-price">RM 1008.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(41)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(41)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-15</td>
+      <td><div class="td-desc">Mild Steel Round Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">12MM X 6M</td>
+      <td class="td-price">RM 17.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(42)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(42)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-16</td>
+      <td><div class="td-desc">Mild Steel Round Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">20MM X 6M</td>
+      <td class="td-price">RM 44.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(43)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(43)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-17</td>
+      <td><div class="td-desc">Copper Shaft</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-copper">Copper</span></td>
+      <td><span class="shape-tag">Shaft</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1 3/4" X 1000MM</td>
+      <td class="td-price">RM 1234.30</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(44)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(44)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-18</td>
+      <td><div class="td-desc">Aluminium Plate (1100)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 4FT X 8FT</td>
+      <td class="td-price">RM 445.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(45)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(45)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-19</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">15MM X 75MM X 6M</td>
+      <td class="td-price">RM 192.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(46)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(46)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-20</td>
+      <td><div class="td-desc">Aluminium Flat Bar (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1/4" X 3" X 3000MM</td>
+      <td class="td-price">RM 142.70</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(47)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(47)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-21</td>
+      <td><div class="td-desc">Aluminium Flat Bar (6061)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1/2" X 4" X 3000MM</td>
+      <td class="td-price">RM 380.10</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(48)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(48)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-22</td>
+      <td><div class="td-desc">Mild Steel Square Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Square Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2" X 2" X 6M</td>
+      <td class="td-price">RM 542.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(49)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(49)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-23</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2MM X 4FT X 8FT</td>
+      <td class="td-price">RM 126.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(50)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(50)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-24</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">5MM X 4FT X 8FT</td>
+      <td class="td-price">RM 310.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(51)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(51)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-25</td>
+      <td><div class="td-desc">Cold Rolled Sheet</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Sheet</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1.0MM X 4FT X 8FT</td>
+      <td class="td-price">RM 78.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(52)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(52)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-26</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 4FT X 8FT</td>
+      <td class="td-price">RM 186.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(53)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(53)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-27</td>
+      <td><div class="td-desc">Mild Steel Chequered Plate</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 5FT X 10FT</td>
+      <td class="td-price">RM 410.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(54)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(54)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-28</td>
+      <td><div class="td-desc">Black Pipe (AA)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">6" X 6M (THK3.0MM) OD 165MM</td>
+      <td class="td-price">RM 220.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(55)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(55)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-29</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">6MM X 4FT X 8FT</td>
+      <td class="td-price">RM 370.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(56)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(56)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-30</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">6MM X 100MM X 6M</td>
+      <td class="td-price">RM 81.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(57)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(57)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-31</td>
+      <td><div class="td-desc">SCH 120 Pipe</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">8" X 6M (219.1MM X THK 18.26MM)</td>
+      <td class="td-price">RM 4171.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(58)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(58)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-32</td>
+      <td><div class="td-desc">SCH 40 Pipe</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2" X 6M (OD 60.3MM ID 52.48MM)</td>
+      <td class="td-price">RM 111.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(59)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(59)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-33</td>
+      <td><div class="td-desc">Stainless Steel Plate (304-2B)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-stainless">Stainless Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2MM X 4FT X 8FT</td>
+      <td class="td-price">RM 490.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(60)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(60)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-34</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">4.5MM X 100MM X 6M</td>
+      <td class="td-price">RM 70.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(61)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(61)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-35</td>
+      <td><div class="td-desc">Stainless Steel Flat Bar (304)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-stainless">Stainless Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">6MM X 100MM X 6M</td>
+      <td class="td-price">RM 304.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(62)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(62)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-QT317-36</td>
+      <td><div class="td-desc">Stainless Steel Flat Bar (304)</div><div class="td-spec">QT2501317</div></td>
+      <td><span class="badge badge-stainless">Stainless Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3MM X 100MM X 6M</td>
+      <td class="td-price">RM 213.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(63)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(63)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-0226-01</td>
+      <td><div class="td-desc">API Pipe SCH 40</div><div class="td-spec">Feb 2026 Quote</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1" X 6MTR</td>
+      <td class="td-price">RM 52.50</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(64)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(64)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-0226-02</td>
+      <td><div class="td-desc">API Pipe SCH 40</div><div class="td-spec">Feb 2026 Quote</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2" X 6MTR</td>
+      <td class="td-price">RM 111.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(65)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(65)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-0226-03</td>
+      <td><div class="td-desc">API Pipe SCH 40</div><div class="td-spec">Feb 2026 Quote</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3" X 6MTR</td>
+      <td class="td-price">RM 230.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(66)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(66)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-0226-04</td>
+      <td><div class="td-desc">API Pipe SCH 40</div><div class="td-spec">Feb 2026 Quote</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">4" X 6MTR</td>
+      <td class="td-price">RM 328.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(67)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(67)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-0226-05</td>
+      <td><div class="td-desc">API Pipe SCH 40</div><div class="td-spec">Feb 2026 Quote</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">6" X 6MTR</td>
+      <td class="td-price">RM 576.50</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(68)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(68)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">SF-0226-06</td>
+      <td><div class="td-desc">MS Channel Bar</div><div class="td-spec">Feb 2026 Quote</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Beam/Channel</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">1" X 2" X 6MTR</td>
+      <td class="td-price">RM 81.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 PCS</td>
+      <td class="td-source">Shea Fatt</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(69)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(69)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-01</td>
+      <td><div class="td-desc">Mild Steel Plate</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 850.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(70)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(70)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-02</td>
+      <td><div class="td-desc">Mild Steel Sheet</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Sheet</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 320.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(71)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(71)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-03</td>
+      <td><div class="td-desc">Aluminium Steel Sheet</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-aluminium">Aluminium</span></td>
+      <td><span class="shape-tag">Sheet</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 650.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(72)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(72)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-04</td>
+      <td><div class="td-desc">Mild Steel Pipe</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Small</td>
+      <td class="td-price">RM 400.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(73)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(73)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-05</td>
+      <td><div class="td-desc">Mild Steel Pipe</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Medium</td>
+      <td class="td-price">RM 450.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(74)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(74)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-06</td>
+      <td><div class="td-desc">Mild Steel Pipe</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Large</td>
+      <td class="td-price">RM 1800.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(75)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(75)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TK-07</td>
+      <td><div class="td-desc">Mild Steel Pipe</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Extra Large</td>
+      <td class="td-price">RM 2300.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(76)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(76)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-07</td>
+      <td><div class="td-desc">Brass Plate</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-other">Other</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 2587.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(77)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(77)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-09</td>
+      <td><div class="td-desc">Angle Bar</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Small</td>
+      <td class="td-price">RM 22.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 batang</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(78)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(78)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-10</td>
+      <td><div class="td-desc">Angle Bar</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Angle Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Medium</td>
+      <td class="td-price">RM 25.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 batang</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(79)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(79)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-11</td>
+      <td><div class="td-desc">Square Hollow</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Small</td>
+      <td class="td-price">RM 32.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 batang</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(80)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(80)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-12</td>
+      <td><div class="td-desc">Square Hollow</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Medium</td>
+      <td class="td-price">RM 65.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 batang</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(81)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(81)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-13</td>
+      <td><div class="td-desc">Rectangular Hollow</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Hollow Section</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 75.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 batang</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(82)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(82)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-25</td>
+      <td><div class="td-desc">Mild Steel Sheet</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Sheet</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 300.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(83)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(83)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TP-06</td>
+      <td><div class="td-desc">Brass Flat Bar</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-other">Other</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 70.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(84)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(84)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TP-07</td>
+      <td><div class="td-desc">Brass Rod</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-other">Other</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Large</td>
+      <td class="td-price">RM 70.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(85)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(85)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TP-08</td>
+      <td><div class="td-desc">Brass Rod</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-other">Other</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Medium</td>
+      <td class="td-price">RM 60.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(86)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(86)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TP-09</td>
+      <td><div class="td-desc">Brass Rod</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-other">Other</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">Small</td>
+      <td class="td-price">RM 50.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(87)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(87)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TP-11</td>
+      <td><div class="td-desc">Mild Steel Round Bar</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Round Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 40.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(88)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(88)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TP-13</td>
+      <td><div class="td-desc">Mild Steel Flat Bar</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Flat Bar</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 50.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 unit</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(89)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(89)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">TPM-06</td>
+      <td><div class="td-desc">Copper Tube</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-copper">Copper</span></td>
+      <td><span class="shape-tag">Pipe</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 180.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 gulung</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(90)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(90)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">BP-62</td>
+      <td><div class="td-desc">Checker Plate</div><div class="td-spec">ADTEC BGH</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Plate</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">General</td>
+      <td class="td-price">RM 300.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 keping</td>
+      <td class="td-source">ADTEC JTM</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(91)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(91)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">E6013</td>
+      <td><div class="td-desc">Electrodes</div><div class="td-spec">E6013</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Stick Electrode (SMAW)</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2.6mm</td>
+      <td class="td-price">RM 0.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 BOX</td>
+      <td class="td-source">Others</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(92)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(92)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">E6013</td>
+      <td><div class="td-desc">Electrodes</div><div class="td-spec">E6013</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Stick Electrode (SMAW)</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3.2mm</td>
+      <td class="td-price">RM 0.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 BOX</td>
+      <td class="td-source">Others</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(93)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(93)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">E7016</td>
+      <td><div class="td-desc">Electrodes</div><div class="td-spec">E7016</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Stick Electrode (SMAW)</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2.6mm</td>
+      <td class="td-price">RM 0.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 BOX</td>
+      <td class="td-source">Others</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(94)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(94)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">E7016</td>
+      <td><div class="td-desc">Electrodes</div><div class="td-spec">E7016</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Stick Electrode (SMAW)</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3.2mm</td>
+      <td class="td-price">RM 0.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 BOX</td>
+      <td class="td-source">Others</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(95)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(95)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">E7018</td>
+      <td><div class="td-desc">Electrodes</div><div class="td-spec">E7018</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Stick Electrode (SMAW)</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">2.6mm</td>
+      <td class="td-price">RM 0.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 BOX</td>
+      <td class="td-source">Others</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(96)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(96)">✕</button>
+        </div>
+      </td>
+    </tr>
+  
+    <tr>
+      <td class="td-code">E7018</td>
+      <td><div class="td-desc">Electrodes</div><div class="td-spec">E7018</div></td>
+      <td><span class="badge badge-steel">Mild Steel</span></td>
+      <td><span class="shape-tag">Stick Electrode (SMAW)</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">3.2mm</td>
+      <td class="td-price">RM 0.00</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">1 BOX</td>
+      <td class="td-source">Others</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(97)">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(97)">✕</button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Add New Item</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Item Code</label>
+        <input type="text" id="f-code" placeholder="e.g. MS-001">
+      </div>
+      <div class="form-group">
+        <label>Unit Price (RM)</label>
+        <input type="number" id="f-price" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group full">
+        <label>Description</label>
+        <input type="text" id="f-desc" placeholder="e.g. Mild Steel Plate">
+      </div>
+      <div class="form-group full">
+        <label>Size / Specification</label>
+        <input type="text" id="f-size" placeholder="e.g. 3MM X 4FT X 8FT">
+      </div>
+      <div class="form-group full">
+        <label>Product Category</label>
+        <select id="f-productCategory"><option value="Besi">Besi</option><option value="Welding Consumables">Welding Consumables</option><option value="Welding Machine" selected="">Welding Machine</option><option value="Power Tools (Metal &amp; Wood Working)">Power Tools (Metal &amp; Wood Working)</option><option value="Electrical &amp; Electronic Consumables">Electrical &amp; Electronic Consumables</option></select>
+      </div>
+      <div class="form-group">
+        <label>Material Type</label>
+        <select id="f-material"><option value="Mild Steel" selected="">Mild Steel</option><option value="Aluminium">Aluminium</option><option value="Stainless Steel">Stainless Steel</option><option value="Galvanized">Galvanized</option><option value="Copper">Copper</option><option value="Other">Other</option><option value="Cast Iron">Cast Iron</option><option value="Hardfacing">Hardfacing</option><option value="Low Hydrogen">Low Hydrogen</option><option value="PVC">PVC</option><option value="Rubber">Rubber</option><option value="Steel">Steel</option><option value="Carbide">Carbide</option><option value="HSS">HSS</option></select>
+      </div>
+      <div class="form-group">
+        <label>Shape / Form</label>
+        <select id="f-shape"><option value="Plate" selected="">Plate</option><option value="Sheet">Sheet</option><option value="Pipe">Pipe</option><option value="Flat Bar">Flat Bar</option><option value="Round Bar">Round Bar</option><option value="Hollow Section">Hollow Section</option><option value="Angle Bar">Angle Bar</option><option value="Square Bar">Square Bar</option><option value="Beam/Channel">Beam/Channel</option><option value="Shaft">Shaft</option><option value="Other">Other</option><option value="Stick Electrode (SMAW)">Stick Electrode (SMAW)</option><option value="MIG Wire">MIG Wire</option><option value="TIG Rod">TIG Rod</option><option value="Flux Core Wire">Flux Core Wire</option><option value="Submerged Arc Wire">Submerged Arc Wire</option><option value="Rod">Rod</option><option value="Wire">Wire</option><option value="Flux">Flux</option><option value="Cable">Cable</option><option value="Switch">Switch</option><option value="Connector">Connector</option><option value="Fuse">Fuse</option><option value="Disc">Disc</option><option value="Blade">Blade</option><option value="Drill Bit">Drill Bit</option><option value="Grinding Wheel">Grinding Wheel</option></select>
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="f-qty" value="1" min="1">
+      </div>
+      <div class="form-group">
+        <label>Unit</label>
+        <select id="f-unit">
+          <option value="PCS">PCS</option>
+          <option value="KG">KG</option>
+          <option value="MTR">MTR</option>
+          <option value="SET">SET</option>
+          <option value="ROLL">ROLL</option>
+          <option value="BOX">BOX</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Source Supplier</label>
+        <select id="f-source"><option value="Shea Fatt" selected="">Shea Fatt</option><option value="ADTEC JTM">ADTEC JTM</option><option value="Others">Others</option></select>
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Optional notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MANAGEMENT MODAL -->
+<div class="cat-modal-overlay" id="catModalOverlay">
+  <div class="cat-modal">
+    <div class="cat-modal-header">
+      <h2 class="cat-modal-title" id="catModalTitle">Manage: Product Category</h2>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <p class="cat-modal-sub" id="catModalSub">Rename, reorder, add or remove Product Category categories. Items assigned to deleted categories keep their original value.</p>
+    <div class="cat-list" id="catList">
+      <div class="cat-item" data-index="0" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <input type="text" value="Besi" oninput="tempCats[0]=this.value">
+        <span class="cat-count-badge">91 items</span>
+        <div class="cat-move-btns">
+          <button class="btn-move" onclick="moveCatItem(0,-1)" title="Move up" disabled="">▲</button>
+          <button class="btn-move" onclick="moveCatItem(0,1)" title="Move down">▼</button>
+        </div>
+        <button class="btn-cat-del" onclick="removeCatItem(0)" title="In use — reassign items first" style="opacity:0.3;cursor:not-allowed">✕</button>
+      </div>
+      <div class="cat-item" data-index="1" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <input type="text" value="Welding Consumables" oninput="tempCats[1]=this.value">
+        <span class="cat-count-badge">6 items</span>
+        <div class="cat-move-btns">
+          <button class="btn-move" onclick="moveCatItem(1,-1)" title="Move up">▲</button>
+          <button class="btn-move" onclick="moveCatItem(1,1)" title="Move down">▼</button>
+        </div>
+        <button class="btn-cat-del" onclick="removeCatItem(1)" title="In use — reassign items first" style="opacity:0.3;cursor:not-allowed">✕</button>
+      </div>
+      <div class="cat-item" data-index="2" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <input type="text" value="Welding Machine" oninput="tempCats[2]=this.value">
+        <span class="cat-count-badge">0 items</span>
+        <div class="cat-move-btns">
+          <button class="btn-move" onclick="moveCatItem(2,-1)" title="Move up">▲</button>
+          <button class="btn-move" onclick="moveCatItem(2,1)" title="Move down">▼</button>
+        </div>
+        <button class="btn-cat-del" onclick="removeCatItem(2)" title="Delete" style="">✕</button>
+      </div>
+      <div class="cat-item" data-index="3" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <input type="text" value="Power Tools (Metal &amp; Wood Working)" oninput="tempCats[3]=this.value">
+        <span class="cat-count-badge">0 items</span>
+        <div class="cat-move-btns">
+          <button class="btn-move" onclick="moveCatItem(3,-1)" title="Move up">▲</button>
+          <button class="btn-move" onclick="moveCatItem(3,1)" title="Move down">▼</button>
+        </div>
+        <button class="btn-cat-del" onclick="removeCatItem(3)" title="Delete" style="">✕</button>
+      </div>
+      <div class="cat-item" data-index="4" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <input type="text" value="Electrical &amp; Electronic Consumables" oninput="tempCats[4]=this.value">
+        <span class="cat-count-badge">0 items</span>
+        <div class="cat-move-btns">
+          <button class="btn-move" onclick="moveCatItem(4,-1)" title="Move up">▲</button>
+          <button class="btn-move" onclick="moveCatItem(4,1)" title="Move down" disabled="">▼</button>
+        </div>
+        <button class="btn-cat-del" onclick="removeCatItem(4)" title="Delete" style="">✕</button>
+      </div></div>
+    <button class="btn-add-cat" onclick="addCatItem()">＋ Add Category</button>
+    <div class="cat-warning" id="catWarning" style="display: none;"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCatModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCatModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>Delete Item?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-confirm-del" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const RAW_DATA = [
+  {
+    "code": "SF-QT375-01",
+    "description": "Black Pipe",
+    "size": "2\" X 6M (OD 60.2MM X THK 1.9MM)",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 45.9,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-02",
+    "description": "Black Pipe",
+    "size": "1 1/2\" X 6M (OD 48.4MM X THK 1.9MM)",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 36.5,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-03",
+    "description": "Black Pipe",
+    "size": "1\" X 6M (OD 33.8MM X THK 1.9MM)",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 25.1,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-04",
+    "description": "Rectangular Hollow Section",
+    "size": "1.5MM X 2\" X 4\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 57.8,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-05",
+    "description": "Rectangular Hollow Section",
+    "size": "1.5MM X 2\" X 3\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 47.1,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-06",
+    "description": "Rectangular Hollow Section",
+    "size": "1.0MM X 1\" X 2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 16.9,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-07",
+    "description": "Square Hollow Section",
+    "size": "1.0MM X 1\" X 1\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 11.1,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-08",
+    "description": "Mild Steel Plate",
+    "size": "3MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 186,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-09",
+    "description": "Mild Steel Plate",
+    "size": "9MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 557,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-10",
+    "description": "Mild Steel Flat Bar",
+    "size": "1/8\" X 1\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 12.5,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-11",
+    "description": "Mild Steel Flat Bar",
+    "size": "1/8\" X 2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 26,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-12",
+    "description": "Mild Steel Flat Bar",
+    "size": "3/8\" X 4\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 121,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-13",
+    "description": "Mild Steel Angle Bar",
+    "size": "3MM X 1\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 15,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-14",
+    "description": "Mild Steel Angle Bar",
+    "size": "3MM X 1 1/2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 23,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-15",
+    "description": "Galvanized Plate",
+    "size": "3MM X 4FT X 8FT",
+    "material": "Galvanized",
+    "shape": "Plate",
+    "price": 270,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-16",
+    "description": "Universal Beam",
+    "size": "100MM X 100MM X 16.9KG/M X 6M",
+    "material": "Mild Steel",
+    "shape": "Beam/Channel",
+    "price": 476,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-17",
+    "description": "Rectangular Hollow Section",
+    "size": "1.0MM X 3/4\" X 1 1/2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 12.7,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-18",
+    "description": "Rectangular Hollow Section",
+    "size": "1.0MM X 1\" X 2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 16.9,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-19",
+    "description": "Square Hollow Section",
+    "size": "1.0MM X 1\" X 1\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 11.1,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-20",
+    "description": "Mild Steel Flat Bar",
+    "size": "1/8\" X 1\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 12.5,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-21",
+    "description": "Mild Steel Flat Bar",
+    "size": "1/8\" X 2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 26,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-22",
+    "description": "Square Hollow Section",
+    "size": "1.0MM X 1/2\" X 1/2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 5.3,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-23",
+    "description": "Mild Steel Angle Bar",
+    "size": "3MM X 1\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 15,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-24",
+    "description": "Mild Steel Angle Bar",
+    "size": "3MM X 1 1/2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 23,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-25",
+    "description": "Mild Steel Angle Bar",
+    "size": "3MM X 2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 23,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-26",
+    "description": "Expanded Metal",
+    "size": "1020# X 4FT X 8FT T:2MM HOLE 16X38",
+    "material": "Mild Steel",
+    "shape": "Other",
+    "price": 45,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT375-27",
+    "description": "Black Pipe",
+    "size": "1\" X 6M (OD 33.8MM X THK 1.9MM)",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 25.1,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501375",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-01",
+    "description": "Aluminium Square Bar (6061)",
+    "size": "4\" X 4\" X 3.66M",
+    "material": "Aluminium",
+    "shape": "Square Bar",
+    "price": 3227,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-02",
+    "description": "Aluminium Shaft (6061)",
+    "size": "2\" X 6M",
+    "material": "Aluminium",
+    "shape": "Shaft",
+    "price": 1057,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-03",
+    "description": "Mild Steel Flat Bar",
+    "size": "12MM X 100MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 161,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-04",
+    "description": "Mild Steel Flat Bar",
+    "size": "25MM X 100MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 412,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-05",
+    "description": "Mild Steel Flat Bar",
+    "size": "25MM X 150MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 742,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-06",
+    "description": "Mild Steel Flat Bar",
+    "size": "25MM X 50MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 242,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-07",
+    "description": "Mild Steel Round Bar",
+    "size": "16MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Round Bar",
+    "price": 28,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-08",
+    "description": "Mild Steel Round Bar",
+    "size": "20MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Round Bar",
+    "price": 44,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-09",
+    "description": "Mild Steel Shaft",
+    "size": "32MM X 6.03M",
+    "material": "Mild Steel",
+    "shape": "Shaft",
+    "price": 133.2,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-10",
+    "description": "Aluminium Plate (1100)",
+    "size": "5MM X 4FT X 8FT",
+    "material": "Aluminium",
+    "shape": "Plate",
+    "price": 1023,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-11",
+    "description": "Aluminium Shaft (6061)",
+    "size": "2\" X 3000MM",
+    "material": "Aluminium",
+    "shape": "Shaft",
+    "price": 635,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-12",
+    "description": "Aluminium Shaft (6061)",
+    "size": "1 1/4\" X 3000MM",
+    "material": "Aluminium",
+    "shape": "Shaft",
+    "price": 249,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-13",
+    "description": "Aluminium Square Bar (6061)",
+    "size": "2 1/2\" X 2 1/2\" X 3M",
+    "material": "Aluminium",
+    "shape": "Square Bar",
+    "price": 1029,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-14",
+    "description": "Aluminium Plate (6061)",
+    "size": "40MM X 4\" X 3000MM",
+    "material": "Aluminium",
+    "shape": "Plate",
+    "price": 1008,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-15",
+    "description": "Mild Steel Round Bar",
+    "size": "12MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Round Bar",
+    "price": 17,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-16",
+    "description": "Mild Steel Round Bar",
+    "size": "20MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Round Bar",
+    "price": 44,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-17",
+    "description": "Copper Shaft",
+    "size": "1 3/4\" X 1000MM",
+    "material": "Copper",
+    "shape": "Shaft",
+    "price": 1234.3,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-18",
+    "description": "Aluminium Plate (1100)",
+    "size": "3MM X 4FT X 8FT",
+    "material": "Aluminium",
+    "shape": "Plate",
+    "price": 445,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-19",
+    "description": "Mild Steel Flat Bar",
+    "size": "15MM X 75MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 192,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-20",
+    "description": "Aluminium Flat Bar (6061)",
+    "size": "1/4\" X 3\" X 3000MM",
+    "material": "Aluminium",
+    "shape": "Flat Bar",
+    "price": 142.7,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-21",
+    "description": "Aluminium Flat Bar (6061)",
+    "size": "1/2\" X 4\" X 3000MM",
+    "material": "Aluminium",
+    "shape": "Flat Bar",
+    "price": 380.1,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-22",
+    "description": "Mild Steel Square Bar",
+    "size": "2\" X 2\" X 6M",
+    "material": "Mild Steel",
+    "shape": "Square Bar",
+    "price": 542,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-23",
+    "description": "Mild Steel Plate",
+    "size": "2MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 126,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-24",
+    "description": "Mild Steel Plate",
+    "size": "5MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 310,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-25",
+    "description": "Cold Rolled Sheet",
+    "size": "1.0MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Sheet",
+    "price": 78,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-26",
+    "description": "Mild Steel Plate",
+    "size": "3MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 186,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-27",
+    "description": "Mild Steel Chequered Plate",
+    "size": "3MM X 5FT X 10FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 410,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-28",
+    "description": "Black Pipe (AA)",
+    "size": "6\" X 6M (THK3.0MM) OD 165MM",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 220,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-29",
+    "description": "Mild Steel Plate",
+    "size": "6MM X 4FT X 8FT",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 370,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-30",
+    "description": "Mild Steel Flat Bar",
+    "size": "6MM X 100MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 81,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-31",
+    "description": "SCH 120 Pipe",
+    "size": "8\" X 6M (219.1MM X THK 18.26MM)",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 4171,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-32",
+    "description": "SCH 40 Pipe",
+    "size": "2\" X 6M (OD 60.3MM ID 52.48MM)",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 111,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-33",
+    "description": "Stainless Steel Plate (304-2B)",
+    "size": "2MM X 4FT X 8FT",
+    "material": "Stainless Steel",
+    "shape": "Plate",
+    "price": 490,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-34",
+    "description": "Mild Steel Flat Bar",
+    "size": "4.5MM X 100MM X 6M",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 70,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-35",
+    "description": "Stainless Steel Flat Bar (304)",
+    "size": "6MM X 100MM X 6M",
+    "material": "Stainless Steel",
+    "shape": "Flat Bar",
+    "price": 304,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-QT317-36",
+    "description": "Stainless Steel Flat Bar (304)",
+    "size": "3MM X 100MM X 6M",
+    "material": "Stainless Steel",
+    "shape": "Flat Bar",
+    "price": 213,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "QT2501317",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-0226-01",
+    "description": "API Pipe SCH 40",
+    "size": "1\" X 6MTR",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 52.5,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "Feb 2026 Quote",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-0226-02",
+    "description": "API Pipe SCH 40",
+    "size": "2\" X 6MTR",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 111,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "Feb 2026 Quote",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-0226-03",
+    "description": "API Pipe SCH 40",
+    "size": "3\" X 6MTR",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 230,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "Feb 2026 Quote",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-0226-04",
+    "description": "API Pipe SCH 40",
+    "size": "4\" X 6MTR",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 328,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "Feb 2026 Quote",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-0226-05",
+    "description": "API Pipe SCH 40",
+    "size": "6\" X 6MTR",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 576.5,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "Feb 2026 Quote",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "SF-0226-06",
+    "description": "MS Channel Bar",
+    "size": "1\" X 2\" X 6MTR",
+    "material": "Mild Steel",
+    "shape": "Beam/Channel",
+    "price": 81,
+    "qty": 1,
+    "unit": "PCS",
+    "source": "Shea Fatt",
+    "notes": "Feb 2026 Quote",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-01",
+    "description": "Mild Steel Plate",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 850,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-02",
+    "description": "Mild Steel Sheet",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Sheet",
+    "price": 320,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-03",
+    "description": "Aluminium Steel Sheet",
+    "size": "General",
+    "material": "Aluminium",
+    "shape": "Sheet",
+    "price": 650,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-04",
+    "description": "Mild Steel Pipe",
+    "size": "Small",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 400,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-05",
+    "description": "Mild Steel Pipe",
+    "size": "Medium",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 450,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-06",
+    "description": "Mild Steel Pipe",
+    "size": "Large",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 1800,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TK-07",
+    "description": "Mild Steel Pipe",
+    "size": "Extra Large",
+    "material": "Mild Steel",
+    "shape": "Pipe",
+    "price": 2300,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-07",
+    "description": "Brass Plate",
+    "size": "General",
+    "material": "Other",
+    "shape": "Plate",
+    "price": 2587,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-09",
+    "description": "Angle Bar",
+    "size": "Small",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 22,
+    "qty": 1,
+    "unit": "batang",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-10",
+    "description": "Angle Bar",
+    "size": "Medium",
+    "material": "Mild Steel",
+    "shape": "Angle Bar",
+    "price": 25,
+    "qty": 1,
+    "unit": "batang",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-11",
+    "description": "Square Hollow",
+    "size": "Small",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 32,
+    "qty": 1,
+    "unit": "batang",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-12",
+    "description": "Square Hollow",
+    "size": "Medium",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 65,
+    "qty": 1,
+    "unit": "batang",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-13",
+    "description": "Rectangular Hollow",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Hollow Section",
+    "price": 75,
+    "qty": 1,
+    "unit": "batang",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-25",
+    "description": "Mild Steel Sheet",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Sheet",
+    "price": 300,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TP-06",
+    "description": "Brass Flat Bar",
+    "size": "General",
+    "material": "Other",
+    "shape": "Flat Bar",
+    "price": 70,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TP-07",
+    "description": "Brass Rod",
+    "size": "Large",
+    "material": "Other",
+    "shape": "Round Bar",
+    "price": 70,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TP-08",
+    "description": "Brass Rod",
+    "size": "Medium",
+    "material": "Other",
+    "shape": "Round Bar",
+    "price": 60,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TP-09",
+    "description": "Brass Rod",
+    "size": "Small",
+    "material": "Other",
+    "shape": "Round Bar",
+    "price": 50,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TP-11",
+    "description": "Mild Steel Round Bar",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Round Bar",
+    "price": 40,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TP-13",
+    "description": "Mild Steel Flat Bar",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Flat Bar",
+    "price": 50,
+    "qty": 1,
+    "unit": "unit",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "TPM-06",
+    "description": "Copper Tube",
+    "size": "General",
+    "material": "Copper",
+    "shape": "Pipe",
+    "price": 180,
+    "qty": 1,
+    "unit": "gulung",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "BP-62",
+    "description": "Checker Plate",
+    "size": "General",
+    "material": "Mild Steel",
+    "shape": "Plate",
+    "price": 300,
+    "qty": 1,
+    "unit": "keping",
+    "source": "ADTEC JTM",
+    "notes": "ADTEC BGH",
+    "productCategory": "Besi"
+  },
+  {
+    "code": "E6013",
+    "description": "Electrodes",
+    "size": "2.6mm",
+    "material": "Mild Steel",
+    "shape": "Stick Electrode (SMAW)",
+    "price": 0,
+    "qty": 1,
+    "unit": "BOX",
+    "source": "Others",
+    "productCategory": "Welding Consumables",
+    "notes": "E6013"
+  },
+  {
+    "code": "E6013",
+    "description": "Electrodes",
+    "size": "3.2mm",
+    "material": "Mild Steel",
+    "shape": "Stick Electrode (SMAW)",
+    "price": 0,
+    "qty": 1,
+    "unit": "BOX",
+    "source": "Others",
+    "productCategory": "Welding Consumables",
+    "notes": "E6013"
+  },
+  {
+    "code": "E7016",
+    "description": "Electrodes",
+    "size": "2.6mm",
+    "material": "Mild Steel",
+    "shape": "Stick Electrode (SMAW)",
+    "price": 0,
+    "qty": 1,
+    "unit": "BOX",
+    "source": "Others",
+    "productCategory": "Welding Consumables",
+    "notes": "E7016"
+  },
+  {
+    "code": "E7016",
+    "description": "Electrodes",
+    "size": "3.2mm",
+    "material": "Mild Steel",
+    "shape": "Stick Electrode (SMAW)",
+    "price": 0,
+    "qty": 1,
+    "unit": "BOX",
+    "source": "Others",
+    "productCategory": "Welding Consumables",
+    "notes": "E7016"
+  },
+  {
+    "code": "E7018",
+    "description": "Electrodes",
+    "size": "2.6mm",
+    "material": "Mild Steel",
+    "shape": "Stick Electrode (SMAW)",
+    "price": 0,
+    "qty": 1,
+    "unit": "BOX",
+    "source": "Others",
+    "productCategory": "Welding Consumables",
+    "notes": "E7018"
+  },
+  {
+    "code": "E7018",
+    "description": "Electrodes",
+    "size": "3.2mm",
+    "material": "Mild Steel",
+    "shape": "Stick Electrode (SMAW)",
+    "price": 0,
+    "qty": 1,
+    "unit": "BOX",
+    "source": "Others",
+    "productCategory": "Welding Consumables",
+    "notes": "E7018"
+  }
+];
+
+// ─── CATEGORIES STATE ────────────────────────────────────────────────────────
+let productCategories = ["Besi","Welding Consumables","Welding Machine","Power Tools (Metal & Wood Working)","Electrical & Electronic Consumables"];
+
+// Per-product-category sub-categories — each main category has its own independent lists
+let catSubCategories = {
+  "Welding Consumables": {
+    "material": [
+      "Mild Steel",
+      "Stainless Steel",
+      "Aluminium",
+      "Cast Iron",
+      "Hardfacing",
+      "Low Hydrogen",
+      "Other"
+    ],
+    "shape": [
+      "Stick Electrode (SMAW)",
+      "MIG Wire",
+      "TIG Rod",
+      "Flux Core Wire",
+      "Submerged Arc Wire",
+      "Rod",
+      "Wire",
+      "Flux",
+      "Other"
+    ],
+    "source": [
+      "Shea Fatt",
+      "ADTEC JTM",
+      "Others"
+    ]
+  },
+  "Besi": {
+    "material": [
+      "Mild Steel",
+      "Aluminium",
+      "Stainless Steel",
+      "Galvanized",
+      "Copper",
+      "Other"
+    ],
+    "shape": [
+      "Plate",
+      "Sheet",
+      "Pipe",
+      "Flat Bar",
+      "Round Bar",
+      "Hollow Section",
+      "Angle Bar",
+      "Square Bar",
+      "Beam/Channel",
+      "Shaft",
+      "Other"
+    ],
+    "source": [
+      "Shea Fatt",
+      "ADTEC JTM"
+    ]
+  },
+  "Power Tools (Metal & Wood Working)": {
+    "material": [
+      "Copper",
+      "PVC",
+      "Rubber",
+      "Other"
+    ],
+    "shape": [
+      "Cable",
+      "Switch",
+      "Connector",
+      "Fuse",
+      "Other"
+    ],
+    "source": [
+      "Shea Fatt",
+      "ADTEC JTM"
+    ]
+  },
+  "Electrical & Electronic Consumables": {
+    "material": [
+      "Steel",
+      "Aluminium",
+      "Carbide",
+      "HSS",
+      "Other"
+    ],
+    "shape": [
+      "Disc",
+      "Blade",
+      "Drill Bit",
+      "Grinding Wheel",
+      "Other"
+    ],
+    "source": [
+      "Shea Fatt",
+      "ADTEC JTM"
+    ]
+  },
+  "Welding Machine": {
+    "material": [],
+    "shape": [],
+    "source": []
+  }
+};
+
+// Helper: get sub-categories for the currently active product category (or union of all)
+function getSubCats(subType) {
+  if (activeCatFilter !== 'all' && catSubCategories[activeCatFilter]) {
+    return catSubCategories[activeCatFilter][subType] || [];
+  }
+  const all = new Set();
+  productCategories.forEach(p => (catSubCategories[p]?.[subType] || []).forEach(v => all.add(v)));
+  return [...all];
+}
+
+// ─── CAT MODAL STATE ─────────────────────────────────────────────────────────
+let editingCatType = null; // 'material' | 'shape' | 'source' | 'productCategory'
+let editingCatForProduct = null; // which product category owns the sub-cats being edited
+let tempCats = [];
+
+let items = RAW_DATA.map((d,i) => ({...d, id: i+1, productCategory: d.productCategory || 'Welding Machine'}));
+let nextId = items.length + 1;
+let activeFilter = {type:'all', value:'all'};
+let activeCatFilter = 'all'; // tracks selected product category
+let currentSort = {col:null, dir:'asc'};
+let editingId = null;
+let deletingId = null;
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function materialBadgeClass(m) {
+  const map = {'Mild Steel':'badge-steel','Aluminium':'badge-aluminium','Stainless Steel':'badge-stainless','Galvanized':'badge-galvanized','Copper':'badge-copper'};
+  return map[m] || 'badge-other';
+}
+
+function getFiltered() {
+  let data = [...items];
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  if (q) data = data.filter(d =>
+    d.description.toLowerCase().includes(q) ||
+    d.code.toLowerCase().includes(q) ||
+    d.size.toLowerCase().includes(q) ||
+    d.material.toLowerCase().includes(q)
+  );
+
+  // First filter by product category
+  if (activeCatFilter !== 'all') {
+    data = data.filter(d => d.productCategory === activeCatFilter);
+  }
+
+  // Then apply sub-filter (material / shape / source)
+  if (activeFilter.type !== 'all') {
+    data = data.filter(d => {
+      if (activeFilter.type === 'material') return d.material === activeFilter.value;
+      if (activeFilter.type === 'shape') return d.shape === activeFilter.value;
+      if (activeFilter.type === 'source') return d.source === activeFilter.value;
+      if (activeFilter.type === 'productCategory') return d.productCategory === activeFilter.value;
+      return true;
+    });
+  }
+  const sizeF = document.getElementById('sizeFilter').value;
+  if (sizeF) data = data.filter(d => d.size.includes(sizeF));
+
+  const sort = document.getElementById('sortSelect').value;
+  if (sort === 'price-asc') data.sort((a,b) => a.price - b.price);
+  else if (sort === 'price-desc') data.sort((a,b) => b.price - a.price);
+  else if (sort === 'name-asc') data.sort((a,b) => a.description.localeCompare(b.description));
+  else if (currentSort.col) {
+    data.sort((a,b) => {
+      let va = a[currentSort.col], vb = b[currentSort.col];
+      if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
+      return currentSort.dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+    });
+  }
+  return data;
+}
+
+function toggleSort(col) {
+  if (currentSort.col === col) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+  else { currentSort.col = col; currentSort.dir = 'asc'; }
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-asc','sort-desc'));
+  const thEl = document.getElementById('th-'+col);
+  if (thEl) thEl.classList.add(currentSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+  renderTable();
+}
+
+// ─── RENDER TABLE ────────────────────────────────────────────────────────────
+function renderTable() {
+  const data = getFiltered();
+  const tbody = document.getElementById('tableBody');
+  document.getElementById('filteredCount').textContent = data.length;
+  document.getElementById('showingCount').textContent = data.length;
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">🔩</div><p>No items match your search.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(d => `
+    <tr>
+      <td class="td-code">${d.code}</td>
+      <td><div class="td-desc">${d.description}</div>${d.notes ? `<div class="td-spec">${d.notes}</div>` : ''}</td>
+      <td><span class="badge ${materialBadgeClass(d.material)}">${d.material}</span></td>
+      <td><span class="shape-tag">${d.shape}</span></td>
+      <td style="font-size:12px;font-family:'Space Mono',monospace;max-width:160px">${d.size}</td>
+      <td class="td-price">RM ${d.price.toFixed(2)}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px">${d.qty} ${d.unit}</td>
+      <td class="td-source">${d.source}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="openEditModal(${d.id})">✏ Edit</button>
+          <button class="btn-del" onclick="openConfirm(${d.id})">✕</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  updateCounts();
+}
+
+// ─── SIDEBAR RENDER ──────────────────────────────────────────────────────────
+function renderSidebar() {
+  const si = document.getElementById('sidebarInner');
+
+  // Count items in a given product category, further filtered by sub-filter
+  function countInCat(cat) {
+    if (cat === 'all') return items.length;
+    return items.filter(d => d.productCategory === cat).length;
+  }
+
+  function countSub(type, value) {
+    // count within active product category context
+    let base = [...items];
+    if (activeCatFilter !== 'all') base = base.filter(d => d.productCategory === activeCatFilter);
+    return base.filter(d => d[type] === value).length;
+  }
+
+  function subFilterBtnHtml(type, value, label) {
+    const isActive = activeFilter.type === type && activeFilter.value === value;
+    const c = countSub(type, value);
+    return `<button class="filter-btn sub-filter-btn${isActive ? ' active' : ''}" onclick="setSubFilter('${type}','${escQ(value)}')">${label} <span class="count">${c}</span></button>`;
+  }
+
+  // Build product category buttons
+  const catButtons = productCategories.map(p => {
+    const isActive = activeCatFilter === p;
+    const c = countInCat(p);
+    return `
+      <button class="cat-main-btn${isActive ? ' active' : ''}" onclick="selectProductCat('${escQ(p)}')">
+        <span class="cat-main-label">${p}</span>
+        <span class="count">${c}</span>
+      </button>
+      ${isActive ? `
+        <div class="sub-filters-panel">
+          <div class="sub-section">
+            <div class="sub-section-header">
+              <span class="sub-section-label">Material</span>
+              <button class="btn-manage-sub" onclick="openCatModal('material')">⚙ Manage</button>
+            </div>
+            ${getSubCats('material').map(m => subFilterBtnHtml('material', m, m)).join('')}
+          </div>
+          <div class="sub-section">
+            <div class="sub-section-header">
+              <span class="sub-section-label">Shape / Form</span>
+              <button class="btn-manage-sub" onclick="openCatModal('shape')">⚙ Manage</button>
+            </div>
+            ${getSubCats('shape').map(s => subFilterBtnHtml('shape', s, s)).join('')}
+          </div>
+          <div class="sub-section">
+            <div class="sub-section-header">
+              <span class="sub-section-label">Source</span>
+              <button class="btn-manage-sub" onclick="openCatModal('source')">⚙ Manage</button>
+            </div>
+            ${getSubCats('source').map(s => subFilterBtnHtml('source', s, s)).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `;
+  }).join('');
+
+  const allActive = activeCatFilter === 'all';
+
+  si.innerHTML = `
+    <div class="sidebar-section">
+      <div class="sidebar-label-row" style="margin-bottom:8px">
+        <span class="sidebar-label" style="padding:0">Categories</span>
+        <button class="btn-manage" onclick="openCatModal('productCategory')">⚙ Manage</button>
+      </div>
+      <button class="cat-main-btn${allActive ? ' active' : ''}" onclick="selectProductCat('all')">
+        <span class="cat-main-label">All Items</span>
+        <span class="count">${items.length}</span>
+      </button>
+      ${catButtons}
+    </div>
+  `;
+
+  // update header counts
+  document.getElementById('totalCount').textContent = items.length;
+  document.getElementById('filteredCount').textContent = getFiltered().length;
+
+  // sync dropdowns in add/edit modal
+  syncModalDropdowns();
+}
+
+function escQ(s) { return s.replace(/'/g, "\\'"); }
+
+function syncModalDropdowns() {
+  // Product Category dropdown
+  const pcSel = document.getElementById('f-productCategory');
+  const curPC = pcSel.value;
+  pcSel.innerHTML = productCategories.map(p => `<option value="${p}"${p===curPC?' selected':''}>${p}</option>`).join('');
+
+  // Material dropdown
+  const mSel = document.getElementById('f-material');
+  const curM = mSel.value;
+  const mCats = getSubCats('material');
+  mSel.innerHTML = mCats.map(m => `<option value="${m}"${m===curM?' selected':''}>${m}</option>`).join('');
+
+  // Shape dropdown
+  const sSel = document.getElementById('f-shape');
+  const curS = sSel.value;
+  const sCats = getSubCats('shape');
+  sSel.innerHTML = sCats.map(s => `<option value="${s}"${s===curS?' selected':''}>${s}</option>`).join('');
+
+  // Source dropdown
+  const srcSel = document.getElementById('f-source');
+  const curSrc = srcSel.value;
+  const srcCats = getSubCats('source');
+  srcSel.innerHTML = srcCats.map(s => `<option value="${s}"${s===curSrc?' selected':''}>${s}</option>`).join('');
+}
+
+// ─── SIDEBAR COUNTS (legacy stub — now handled in renderSidebar) ─────────────
+function updateCounts() { renderSidebar(); }
+
+// ─── FILTER ──────────────────────────────────────────────────────────────────
+function selectProductCat(cat) {
+  activeCatFilter = cat;
+  activeFilter = {type:'all', value:'all'}; // reset sub-filter when switching category
+  renderTable();
+  renderSidebar();
+}
+
+function setSubFilter(type, value) {
+  // toggle off if already active
+  if (activeFilter.type === type && activeFilter.value === value) {
+    activeFilter = {type:'all', value:'all'};
+  } else {
+    activeFilter = {type, value};
+  }
+  renderTable();
+  renderSidebar();
+}
+
+function setFilter(type, value) {
+  activeFilter = {type, value};
+  renderTable();
+  renderSidebar();
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add New Item';
+  ['f-code','f-desc','f-size','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-price').value = '';
+  document.getElementById('f-qty').value = 1;
+  document.getElementById('f-material').value = 'Mild Steel';
+  document.getElementById('f-shape').value = 'Plate';
+  document.getElementById('f-unit').value = 'PCS';
+  document.getElementById('f-source').value = 'Shea Fatt';
+  document.getElementById('f-productCategory').value = productCategories[0];
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(id) {
+  const d = items.find(x => x.id === id);
+  if (!d) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Item';
+  document.getElementById('f-code').value = d.code;
+  document.getElementById('f-desc').value = d.description;
+  document.getElementById('f-size').value = d.size;
+  document.getElementById('f-price').value = d.price;
+  document.getElementById('f-qty').value = d.qty;
+  document.getElementById('f-material').value = d.material;
+  document.getElementById('f-shape').value = d.shape;
+  document.getElementById('f-unit').value = d.unit.toUpperCase();
+  document.getElementById('f-source').value = d.source;
+  document.getElementById('f-productCategory').value = d.productCategory || productCategories[0];
+  document.getElementById('f-notes').value = d.notes || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+function saveItem() {
+  const item = {
+    code: document.getElementById('f-code').value.trim() || `ITEM-${nextId}`,
+    description: document.getElementById('f-desc').value.trim() || 'Unnamed Item',
+    size: document.getElementById('f-size').value.trim() || '-',
+    price: parseFloat(document.getElementById('f-price').value) || 0,
+    qty: parseInt(document.getElementById('f-qty').value) || 1,
+    material: document.getElementById('f-material').value,
+    shape: document.getElementById('f-shape').value,
+    unit: document.getElementById('f-unit').value,
+    source: document.getElementById('f-source').value,
+    productCategory: document.getElementById('f-productCategory').value,
+    notes: document.getElementById('f-notes').value.trim(),
+  };
+
+  if (editingId) {
+    const idx = items.findIndex(x => x.id === editingId);
+    items[idx] = {...items[idx], ...item};
+  } else {
+    items.push({...item, id: nextId++});
+  }
+
+  closeModal();
+  renderTable();
+}
+
+// ─── DELETE ──────────────────────────────────────────────────────────────────
+function openConfirm(id) { deletingId = id; document.getElementById('confirmOverlay').classList.add('open'); }
+function closeConfirm() { deletingId = null; document.getElementById('confirmOverlay').classList.remove('open'); }
+function confirmDelete() {
+  if (deletingId) items = items.filter(x => x.id !== deletingId);
+  closeConfirm();
+  renderTable();
+}
+
+// ─── CATEGORY MODAL ──────────────────────────────────────────────────────────
+function openCatModal(type) {
+  editingCatType = type;
+  const labels = {material:'Material Type', shape:'Shape / Form', source:'Source Supplier', productCategory:'Product Category'};
+  editingCatForProduct = (type !== 'productCategory') ? activeCatFilter : null;
+  const titleSuffix = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? ` — ${editingCatForProduct}` : '';
+  document.getElementById('catModalTitle').textContent = 'Manage: ' + labels[type] + titleSuffix;
+
+  const fieldMap = {material:'material', shape:'shape', source:'source', productCategory:'productCategory'};
+  const field = fieldMap[type];
+  const inUse = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? [...new Set(items.filter(d => d.productCategory === editingCatForProduct).map(d => d[field]))]
+    : [...new Set(items.map(d => d[field]))];
+
+  const scopeNote = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? ` Changes apply only to "${editingCatForProduct}".` : '';
+  document.getElementById('catModalSub').textContent =
+    `Rename, reorder, add or remove ${labels[type]} categories. Items assigned to deleted categories keep their original value.${scopeNote}`;
+  let arr;
+  if (type === 'productCategory') {
+    arr = productCategories;
+  } else if (editingCatForProduct && editingCatForProduct !== 'all' && catSubCategories[editingCatForProduct]) {
+    arr = catSubCategories[editingCatForProduct][type] || [];
+  } else {
+    // fallback: union
+    const all = new Set();
+    productCategories.forEach(p => (catSubCategories[p]?.[type] || []).forEach(v => all.add(v)));
+    arr = [...all];
+  }
+  tempCats = [...arr];
+  renderCatList(type, inUse);
+  document.getElementById('catModalOverlay').classList.add('open');
+}
+
+function renderCatList(type, inUseArr) {
+  const field = type;
+  const catList = document.getElementById('catList');
+  catList.innerHTML = tempCats.map((cat, i) => {
+    const usedCount = (editingCatForProduct && editingCatForProduct !== 'all')
+      ? items.filter(d => d[field] === cat && d.productCategory === editingCatForProduct).length
+      : items.filter(d => d[field] === cat).length;
+    const canDelete = usedCount === 0;
+    return `
+      <div class="cat-item" data-index="${i}" draggable="true">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <input type="text" value="${cat.replace(/"/g,'&quot;')}" oninput="tempCats[${i}]=this.value" />
+        <span class="cat-count-badge">${usedCount} item${usedCount !== 1 ? 's' : ''}</span>
+        <div class="cat-move-btns">
+          <button class="btn-move" onclick="moveCatItem(${i},-1)" title="Move up" ${i===0?'disabled':''}>▲</button>
+          <button class="btn-move" onclick="moveCatItem(${i},1)" title="Move down" ${i===tempCats.length-1?'disabled':''}>▼</button>
+        </div>
+        <button class="btn-cat-del" onclick="removeCatItem(${i})" title="${canDelete ? 'Delete' : 'In use — reassign items first'}" style="${canDelete ? '' : 'opacity:0.3;cursor:not-allowed'}">✕</button>
+      </div>`;
+  }).join('');
+
+  // Wire up drag-and-drop
+  initCatDragDrop();
+
+  // warning for in-use cats
+  const inUseNotListed = inUseArr.filter(v => v && !tempCats.includes(v));
+  const warn = document.getElementById('catWarning');
+  if (inUseNotListed.length) {
+    warn.textContent = `⚠ Some items use values not in this list: ${inUseNotListed.join(', ')}. They'll still appear in the table but won't have a sidebar filter.`;
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function moveCatItem(i, dir) {
+  // sync current input values before moving
+  document.querySelectorAll('#catList .cat-item input').forEach((inp, idx) => { tempCats[idx] = inp.value; });
+  const j = i + dir;
+  if (j < 0 || j >= tempCats.length) return;
+  [tempCats[i], tempCats[j]] = [tempCats[j], tempCats[i]];
+  const type = editingCatType;
+  const base = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? items.filter(d => d.productCategory === editingCatForProduct) : items;
+  const inUse = [...new Set(base.map(d => d[type]))];
+  renderCatList(type, inUse);
+}
+
+function initCatDragDrop() {
+  const catList = document.getElementById('catList');
+  const catItems = catList.querySelectorAll('.cat-item');
+  let dragSrcIndex = null;
+
+  catItems.forEach(item => {
+    const handle = item.querySelector('.drag-handle');
+
+    // only start drag from the handle
+    handle.addEventListener('mousedown', () => { item.setAttribute('draggable', 'true'); });
+    item.addEventListener('dragstart', e => {
+      // sync input values first
+      catItems.forEach((el, idx) => {
+        const inp = el.querySelector('input');
+        if (inp) tempCats[idx] = inp.value;
+      });
+      dragSrcIndex = parseInt(item.dataset.index);
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      catItems.forEach(el => el.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      catItems.forEach(el => el.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      const destIndex = parseInt(item.dataset.index);
+      if (dragSrcIndex === null || dragSrcIndex === destIndex) return;
+      // reorder tempCats
+      const moved = tempCats.splice(dragSrcIndex, 1)[0];
+      tempCats.splice(destIndex, 0, moved);
+      dragSrcIndex = null;
+      const type = editingCatType;
+      const base = (editingCatForProduct && editingCatForProduct !== 'all')
+        ? items.filter(d => d.productCategory === editingCatForProduct) : items;
+      const inUse = [...new Set(base.map(d => d[type]))];
+      renderCatList(type, inUse);
+    });
+  });
+}
+
+function addCatItem() {
+  tempCats.push('New Category');
+  const type = editingCatType;
+  const base = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? items.filter(d => d.productCategory === editingCatForProduct)
+    : items;
+  const inUse = [...new Set(base.map(d => d[type]))];
+  renderCatList(type, inUse);
+  // focus the new input
+  const inputs = document.querySelectorAll('#catList .cat-item input');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+  inputs[inputs.length - 1]?.select();
+}
+
+function removeCatItem(i) {
+  const cat = tempCats[i];
+  const usedCount = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? items.filter(d => d[editingCatType] === cat && d.productCategory === editingCatForProduct).length
+    : items.filter(d => d[editingCatType] === cat).length;
+  if (usedCount > 0) {
+    alert(`Cannot delete "${cat}" — it is assigned to ${usedCount} item${usedCount !== 1 ? 's' : ''}. Edit those items first to change their ${editingCatType}.`);
+    return;
+  }
+  tempCats.splice(i, 1);
+  const base2 = (editingCatForProduct && editingCatForProduct !== 'all')
+    ? items.filter(d => d.productCategory === editingCatForProduct)
+    : items;
+  const inUse = [...new Set(base2.map(d => d[editingCatType]))];
+  renderCatList(editingCatType, inUse);
+}
+
+function closeCatModal() {
+  document.getElementById('catModalOverlay').classList.remove('open');
+  editingCatType = null;
+  editingCatForProduct = null;
+  tempCats = [];
+}
+
+function saveCatModal() {
+  // read latest values from inputs
+  const inputs = document.querySelectorAll('#catList .cat-item input');
+  inputs.forEach((inp, i) => { tempCats[i] = inp.value.trim() || tempCats[i]; });
+  const cleaned = tempCats.map(c => c.trim()).filter(c => c.length > 0);
+
+  if (editingCatType === 'productCategory') {
+    // Sync catSubCategories keys and items.productCategory when names change
+    const oldNames = [...productCategories];
+    productCategories = cleaned;
+
+    // Build a map from old name -> new name (by position)
+    const nameMap = {};
+    oldNames.forEach((oldName, i) => {
+      const newName = cleaned[i]; // undefined if deleted
+      if (newName && oldName !== newName) nameMap[oldName] = newName;
+    });
+
+    // Rename keys in catSubCategories
+    Object.entries(nameMap).forEach(([oldName, newName]) => {
+      if (catSubCategories[oldName]) {
+        catSubCategories[newName] = catSubCategories[oldName];
+        delete catSubCategories[oldName];
+      }
+    });
+
+    // Remove deleted keys from catSubCategories
+    Object.keys(catSubCategories).forEach(k => {
+      if (!productCategories.includes(k)) delete catSubCategories[k];
+    });
+
+    // Ensure new categories have empty sub-cat lists
+    productCategories.forEach(p => {
+      if (!catSubCategories[p]) catSubCategories[p] = {material:[], shape:[], source:[]};
+    });
+
+    // Update productCategory field on all items to reflect renames
+    items = items.map(item => {
+      if (nameMap[item.productCategory]) {
+        return {...item, productCategory: nameMap[item.productCategory]};
+      }
+      return item;
+    });
+
+    // Update activeCatFilter if it was renamed
+    if (nameMap[activeCatFilter]) activeCatFilter = nameMap[activeCatFilter];
+
+  } else if (editingCatForProduct && editingCatForProduct !== 'all' && catSubCategories[editingCatForProduct]) {
+    catSubCategories[editingCatForProduct][editingCatType] = cleaned;
+  } else {
+    // editing from All Items view — apply to all product categories
+    productCategories.forEach(p => {
+      if (!catSubCategories[p]) catSubCategories[p] = {material:[],shape:[],source:[]};
+      catSubCategories[p][editingCatType] = cleaned;
+    });
+  }
+
+  // if active filter was on a deleted category, reset
+  if (activeFilter.type === editingCatType && !cleaned.includes(activeFilter.value)) {
+    activeFilter = {type:'all', value:'all'};
+  }
+  if (editingCatType === 'productCategory' && !cleaned.includes(activeCatFilter)) {
+    activeCatFilter = 'all';
+  }
+
+  closeCatModal();
+  renderSidebar();
+  renderTable();
+}
+
+// ─── EXPORT HTML ─────────────────────────────────────────────────────────────
+function exportHTML() {
+  const source = document.documentElement.outerHTML;
+
+  // Use string indexOf/slice — no regex, safe for all special characters
+  function replaceBlock(src, startMarker, endMarker, replacement) {
+    const start = src.indexOf(startMarker);
+    const end = src.indexOf(endMarker, start);
+    if (start === -1 || end === -1) return src;
+    return src.slice(0, start) + replacement + src.slice(end + endMarker.length);
+  }
+
+  const exportItems = items.map(({id, ...rest}) => rest);
+  let out = source;
+
+  // Replace RAW_DATA block
+  out = replaceBlock(out,
+    'const RAW_DATA = [',
+    '];\n\n// \u2500\u2500\u2500 CATEGORIES STATE',
+    'const RAW_DATA = ' + JSON.stringify(exportItems, null, 2) + ';\n\n// \u2500\u2500\u2500 CATEGORIES STATE'
+  );
+
+  // Replace productCategories line
+  out = replaceBlock(out,
+    'let productCategories = [',
+    '];\n\n// Per-product',
+    'let productCategories = ' + JSON.stringify(productCategories) + ';\n\n// Per-product'
+  );
+
+  // Replace catSubCategories block — use unique trailing marker
+  out = replaceBlock(out,
+    'let catSubCategories = {',
+    '};\n\n// Helper',
+    'let catSubCategories = ' + JSON.stringify(catSubCategories, null, 2) + ';\n\n// Helper'
+  );
+
+  const blob = new Blob([out], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'besi.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+renderSidebar();
+renderTable();
+</script>
+
+</body></html>
